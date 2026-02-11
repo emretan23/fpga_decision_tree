@@ -6,21 +6,25 @@ Two implementations are provided with identical interfaces:
 
 | Design | File | Traversal | Latency | Throughput |
 |--------|------|-----------|---------|------------|
-| **Original (FSM)** | `rtl/decision_tree.sv` | Linked-list walk | depth + 1 cycles | 1 result / (depth+2) cycles |
+| **Original (FSM)** | `rtl/decision_tree.sv` | Linked-list walk | depth cycles | 1 result / (depth+1) cycles |
 | **Pipelined** | `rtl/decision_tree_pipelined.sv` | Pipeline stages | MAX_DEPTH + 2 cycles (fixed) | **1 result / cycle** |
+
+The original is faster for single shallow queries. The pipeline wins on sustained throughput.
 
 ## Architecture
 
 ### Original — FSM / Linked-List Traversal
 
-1. **Pre-computation:** A combinational block evaluates all 64 nodes in parallel against `market_input`, building a "next pointer" table (`path[]`).
-2. **Traversal:** An FSM walks `path[]` one hop per clock cycle — `current = path[current]` — until a leaf is found.
+1. **Pre-computation:** A combinational block evaluates all 64 nodes in parallel against `market_input`, building a "next pointer" table (`path[]`). The table is captured once on the `start` pulse and frozen for the traversal.
+2. **Traversal:** An FSM walks `path[]` one hop per clock cycle — `current = path[current]` — until a leaf is found via combinational read of `tree_mem`.
 
 This collapses the tree into a singly linked list for each input. Simple but sequential.
 
+> **Timing note:** The leaf detection uses a combinational read that cascades two LUTRAM lookups in a single cycle. At high clock speeds (>300 MHz), this may require switching to a registered `node_reg` approach (+1 cycle latency but shorter critical path). See the comment in `rtl/decision_tree.sv` for details.
+
 ### Pipelined
 
-A `generate` loop unrolls the tree into one pipeline stage per level. Each stage reads one node, evaluates the threshold, and passes the child index forward. `market_input` is captured once and frozen for the traversal — no mid-traversal corruption.
+A `generate` loop unrolls the tree into one pipeline stage per level. Each stage reads one node, evaluates the threshold, and passes the child index forward. `market_input` is captured once and frozen for the traversal.
 
 After the pipeline fills, one new result emerges every clock cycle.
 
@@ -94,11 +98,12 @@ LICENSE
 
 ## Interview Materials
 
-The project includes an interview question (`INTERVIEW_QUESTION.md`) and solution (`INTERVIEW_SOLUTION.md`) that use this codebase. The question covers:
+The `doc/` folder contains an interview question and solution derived from this project:
 
-1. Tree tracing (warm-up)
-2. RTL analysis — identifying the linked-list traversal pattern and a registered pipeline delay
-3. Design critique — area/power trade-offs, pipelining, and a subtle mid-traversal bug
+- `INTERVIEW_QUESTION.md` — 3-part question (tree tracing, RTL analysis, design critique)
+- `INTERVIEW_SOLUTION.md` — full solutions with evaluation rubric
+
+Topics covered: FSM timing analysis, linked-list traversal in hardware, latency vs fmax trade-offs, pipelining, and mid-traversal input stability.
 
 ## License
 
