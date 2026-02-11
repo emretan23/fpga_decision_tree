@@ -47,7 +47,7 @@ test-orig:
 	@mkdir -p $(BUILD_DIR)/test_orig
 	verilator --cc $(HDL_FILES) \
 	--exe ../$(SIM_DIR)/test_original.cpp \
-	--trace --timing \
+	--trace \
 	--Mdir $(BUILD_DIR)/test_orig \
 	--build \
 	-o test_original
@@ -59,7 +59,7 @@ test-pipe:
 	@mkdir -p $(BUILD_DIR)/test_pipe
 	verilator --cc $(PIPE_HDL) \
 	--exe ../$(SIM_DIR)/test_pipelined.cpp \
-	--trace --timing \
+	--trace \
 	--Mdir $(BUILD_DIR)/test_pipe \
 	--build \
 	-o test_pipelined
