@@ -76,6 +76,23 @@ Results are written to `results_original.txt` and `results_pipelined.txt` with:
 
 VCD waveforms are generated at `test_original.vcd` and `test_pipelined.vcd` for inspection with [Surfer](https://surfer-project.org/) or GTKWave.
 
+## Vivado Flow (Arty A7-35T)
+
+TCL scripts for Xilinx Vivado targeting the Digilent Arty A7-35T. No Vivado project file needed — everything runs in non-project batch mode.
+
+```bash
+# Synthesis only (timing analysis, no board)
+vivado -mode batch -source vivado/scripts/synth.tcl
+
+# Full implementation → bitstream
+vivado -mode batch -source vivado/scripts/impl.tcl
+
+# Program the board
+vivado -mode batch -source vivado/scripts/program.tcl
+```
+
+See [`vivado/README.md`](vivado/README.md) for full details, board mapping, and how to adapt to other FPGAs.
+
 ## Project Structure
 
 ```
@@ -88,10 +105,21 @@ tb/
 sim/
   test_original.cpp              # C++ test harness + golden model (original)
   test_pipelined.cpp             # C++ test harness + golden model (pipelined)
+vivado/
+  constraints/
+    timing.xdc                   # Timing-only (synthesis analysis)
+    arty_a7_35t.xdc              # Pin mapping for Arty A7-35T
+  scripts/
+    synth.tcl                    # Synthesis flow
+    impl.tcl                     # Place & route + bitstream
+    xsim.tcl                     # XSim simulation
+    program.tcl                  # JTAG programming
+  src/
+    top_arty.sv                  # Board wrapper for Arty A7-35T
 doc/
   INTERVIEW_QUESTION.md          # Interview question derived from this project
   INTERVIEW_SOLUTION.md          # Solution guide with rubric
-Makefile                         # Build targets
+Makefile                         # Verilator build targets
 README.md
 LICENSE
 ```
