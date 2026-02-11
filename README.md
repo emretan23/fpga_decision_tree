@@ -6,8 +6,8 @@ Two implementations are provided with identical interfaces:
 
 | Design | File | Traversal | Latency | Throughput |
 |--------|------|-----------|---------|------------|
-| **Original (FSM)** | `decision_tree.sv` | Linked-list walk | depth + 1 cycles | 1 result / (depth+2) cycles |
-| **Pipelined** | `decision_tree_pipelined.sv` | Pipeline stages | MAX_DEPTH + 2 cycles (fixed) | **1 result / cycle** |
+| **Original (FSM)** | `rtl/decision_tree.sv` | Linked-list walk | depth + 1 cycles | 1 result / (depth+2) cycles |
+| **Pipelined** | `rtl/decision_tree_pipelined.sv` | Pipeline stages | MAX_DEPTH + 2 cycles (fixed) | **1 result / cycle** |
 
 ## Architecture
 
@@ -75,15 +75,21 @@ VCD waveforms are generated at `test_original.vcd` and `test_pipelined.vcd` for 
 ## Project Structure
 
 ```
-decision_tree.sv                 # Original FSM-based design
-decision_tree_pipelined.sv       # Pipelined alternative
-decision_tree_tb.sv              # SV testbench (original)
-decision_tree_pipelined_tb.sv    # SV testbench (pipelined)
-test_original.cpp                # C++ test harness + golden model (original)
-test_pipelined.cpp               # C++ test harness + golden model (pipelined)
+rtl/
+  decision_tree.sv               # Original FSM-based design
+  decision_tree_pipelined.sv     # Pipelined alternative
+tb/
+  decision_tree_tb.sv            # SV testbench (original)
+  decision_tree_pipelined_tb.sv  # SV testbench (pipelined)
+sim/
+  test_original.cpp              # C++ test harness + golden model (original)
+  test_pipelined.cpp             # C++ test harness + golden model (pipelined)
+doc/
+  INTERVIEW_QUESTION.md          # Interview question derived from this project
+  INTERVIEW_SOLUTION.md          # Solution guide with rubric
 Makefile                         # Build targets
-INTERVIEW_QUESTION.md            # Interview question derived from this project
-INTERVIEW_SOLUTION.md            # Solution guide with rubric
+README.md
+LICENSE
 ```
 
 ## Interview Materials

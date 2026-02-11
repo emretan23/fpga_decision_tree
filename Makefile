@@ -1,55 +1,70 @@
-TOP_MODULE = decision_tree
-HDL_FILES = decision_tree.sv
-TB_FILES = decision_tree_tb.sv
-WAVE_FILE = dump.vcd
+# ===========================================================================
+# FPGA Decision Tree — Build System
+# ===========================================================================
 
-# Pipelined variant
-PIPE_HDL = decision_tree_pipelined.sv
-PIPE_TB  = decision_tree_pipelined_tb.sv
+# --- Source paths ---
+RTL_DIR  = rtl
+TB_DIR   = tb
+SIM_DIR  = sim
+BUILD_DIR = build
+
+HDL_FILES = $(RTL_DIR)/decision_tree.sv
+TB_FILES  = $(TB_DIR)/decision_tree_tb.sv
+
+PIPE_HDL  = $(RTL_DIR)/decision_tree_pipelined.sv
+PIPE_TB   = $(TB_DIR)/decision_tree_pipelined_tb.sv
 
 all: test
 
-# --- SystemVerilog testbenches (self-contained, no C++) ---
+# ===========================================================================
+# SystemVerilog testbenches (self-contained, no C++)
+# ===========================================================================
 tb:
+	@mkdir -p $(BUILD_DIR)/tb
 	verilator -cc $(HDL_FILES) $(TB_FILES) \
 	--top-module decision_tree_tb \
 	--trace --timing \
-	--Mdir obj_dir_tb \
+	--Mdir $(BUILD_DIR)/tb \
 	--binary --build
 
-	./obj_dir_tb/Vdecision_tree_tb
+	./$(BUILD_DIR)/tb/Vdecision_tree_tb
 
 tb-pipe:
+	@mkdir -p $(BUILD_DIR)/tb_pipe
 	verilator -cc $(PIPE_HDL) $(PIPE_TB) \
 	--top-module decision_tree_pipelined_tb \
 	--trace --timing \
-	--Mdir obj_dir_pipe_tb \
+	--Mdir $(BUILD_DIR)/tb_pipe \
 	--binary --build
 
-	./obj_dir_pipe_tb/Vdecision_tree_pipelined_tb
+	./$(BUILD_DIR)/tb_pipe/Vdecision_tree_pipelined_tb
 
-# --- Comprehensive comparison tests (C++ / Verilator) ---
+# ===========================================================================
+# Comprehensive comparison tests (C++ / Verilator + golden model)
+# ===========================================================================
 test-orig:
 	@echo "=== Building original design test ==="
+	@mkdir -p $(BUILD_DIR)/test_orig
 	verilator --cc $(HDL_FILES) \
-	--exe test_original.cpp \
+	--exe ../$(SIM_DIR)/test_original.cpp \
 	--trace --timing \
-	--Mdir obj_dir_test_orig \
+	--Mdir $(BUILD_DIR)/test_orig \
 	--build \
 	-o test_original
 	@echo "=== Running original design test ==="
-	./obj_dir_test_orig/test_original
+	./$(BUILD_DIR)/test_orig/test_original
 
 test-pipe:
 	@echo "=== Building pipelined design test ==="
+	@mkdir -p $(BUILD_DIR)/test_pipe
 	verilator --cc $(PIPE_HDL) \
-	--exe test_pipelined.cpp \
+	--exe ../$(SIM_DIR)/test_pipelined.cpp \
 	--trace --timing \
-	--Mdir obj_dir_test_pipe \
+	--Mdir $(BUILD_DIR)/test_pipe \
 	--build \
 	-o test_pipelined
 	@echo "=== Running pipelined design test ==="
-	./obj_dir_test_pipe/test_pipelined
+	./$(BUILD_DIR)/test_pipe/test_pipelined
 
 test: test-orig test-pipe
 	@echo ""
@@ -65,19 +80,21 @@ test: test-orig test-pipe
 	@echo "    test_pipelined.vcd"
 	@echo ""
 
-# --- Utilities ---
+# ===========================================================================
+# Utilities
+# ===========================================================================
 clean:
-	rm -rf obj_dir_tb obj_dir_pipe_tb \
-	       obj_dir_test_orig obj_dir_test_pipe \
-	       $(WAVE_FILE) \
-	       test_original.vcd test_pipelined.vcd \
+	rm -rf $(BUILD_DIR) \
+	       *.vcd \
 	       results_original.txt results_pipelined.txt
 
 wave:
-	surfer $(WAVE_FILE)
+	surfer dump.vcd
 
 lint:
 	verilator --lint-only $(HDL_FILES) $(TB_FILES)
 
 lint-pipe:
 	verilator --lint-only $(PIPE_HDL) $(PIPE_TB)
+
+.PHONY: all tb tb-pipe test-orig test-pipe test clean wave lint lint-pipe
