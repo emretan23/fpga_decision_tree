@@ -101,14 +101,13 @@ logic [ADDR_WIDTH-1:0] current_path_index = 0;      // the node whose "next poin
 logic [ADDR_WIDTH-1:0] computed_path [0:MAX_NODES-1]; // combinational version of path[] (before register)
 // logic [0:0] is_left [0:MAX_NODES-1];
 
-// Simulation-only: zero-initialise all nodes and set up VCD dumping.
+// Simulation-only: zero-initialise all nodes.
+// NOTE: $dumpfile/$dumpvars removed — they conflict with the C++ Verilator
+// trace (VerilatedVcdC). VCD dumping is controlled from the C++ test harness.
 initial begin
-    $dumpfile("dump.vcd");
     for (i = 0; i < MAX_NODES; i++) begin
         tree_mem[i] = '0;
-        $dumpvars(0, tree_mem[i]);
     end
-    $dumpvars(0, decision_tree);
 end
 
 // -------------------------------------------------------------------------

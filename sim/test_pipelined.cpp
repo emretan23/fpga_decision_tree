@@ -17,6 +17,7 @@ double sc_time_stamp() { return sim_time; }
 static void tick(Vdecision_tree_pipelined *dut, VerilatedVcdC *tfp) {
     dut->clk = 0; dut->eval(); tfp->dump(sim_time); sim_time += 5;
     dut->clk = 1; dut->eval(); tfp->dump(sim_time); sim_time += 5;
+    tfp->flush();
 }
 
 struct Node {
