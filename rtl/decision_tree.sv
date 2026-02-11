@@ -165,9 +165,19 @@ end
 // -------------------------------------------------------------------------
 // Combinational node read — check the node at path_index without registering
 // -------------------------------------------------------------------------
-// This eliminates the old node_reg off-by-one bug: we check is_leaf on the
-// CURRENT node in the same cycle it's read, not on the previous cycle's
-// stale registered copy.
+// This checks is_leaf on the CURRENT node in the same cycle it's read,
+// giving latency = depth cycles (no +1 penalty).
+//
+// TIMING NOTE: this creates two cascaded LUTRAM reads in the critical path:
+//   path[current_path_index] → path_index → tree_mem[path_index] → is_leaf
+// At high clock speeds (>300 MHz), this may cause setup time violations.
+// If targeting high fmax, replace this combinational read with a registered
+// node_reg (adds +1 cycle latency but breaks the critical path):
+//
+//   // node_t node_reg;  (declare above, remove current_node)
+//   // In the FSM: node_reg <= tree_mem[path_index];
+//   //             if (node_reg.is_leaf) ...
+//
 assign current_node = tree_mem[path_index];
 
 // -------------------------------------------------------------------------
