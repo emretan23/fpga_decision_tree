@@ -351,8 +351,8 @@ int main(int argc, char **argv) {
     fprintf(out, "  Spot tests:        %d / %d\n", pass_count, total);
     fprintf(out, "  Exhaustive (0-255): %d / 256\n", exhaust_pass);
     fprintf(out, "  Design: FSM traversal (linked-list walk)\n");
-    fprintf(out, "  Latency formula: depth + 1 cycles\n");
-    fprintf(out, "  Throughput: 1 result every (depth + 1 + 1) cycles (sequential)\n");
+    fprintf(out, "  Latency formula: depth cycles\n");
+    fprintf(out, "  Throughput: 1 result every (depth + 1) cycles (sequential)\n");
     fprintf(out, "  Verification: C++ golden model (simulate_tree)\n");
     fprintf(out, "================================================================\n");
 
